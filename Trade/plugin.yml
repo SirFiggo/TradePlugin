@@ -1,0 +1,9 @@
+name: Trade
+main: de.eberln.trade.Trade
+version: 1.0
+api-version: 1.16
+author: SirFiggo
+commands:
+  trade:
+    description: test
+    usage: /<command> [player]
