@@ -16,6 +16,7 @@ public class Trade extends JavaPlugin {
 	public void onEnable() {
 		
 		tPC = new TradePlayerController();
+		InventoryStorage.initializeItems();
 		
 		getServer().getPluginManager().registerEvents(new InventoryClickListener(tPC), this);
 		getServer().getPluginManager().registerEvents(new TradePlayerJoinLeaveListener(tPC), this);
@@ -62,10 +63,11 @@ public class Trade extends JavaPlugin {
 	private void sendTradeRequest(Player request, String targetName) {
 		Player target = Bukkit.getPlayer(targetName);
 		
+		if(target != null) {
+		
 		TradePlayer tradeTarget = tPC.getTradePlayer(target.getUniqueId());
 		TradePlayer tradeRequester = tPC.getTradePlayer(request.getUniqueId());
 		
-		if(target != null) {
 			if(!tradeTarget.isBlocked) {
 				if(!tradeRequester.isBlocked) {
 					
@@ -81,7 +83,7 @@ public class Trade extends JavaPlugin {
 					target.sendMessage("Du hast einen Anfrage erhalten. Annehmen mit /trade accept");
 					
 					
-					TradeStatusResetter tSR = new TradeStatusResetter(tradeRequester, tradeTarget, this);
+					TradeStatusResetter tSR = new TradeStatusResetter(tradeRequester, tradeTarget);
 					tradeTarget.setTradeStatusResetter(tSR);
 					Bukkit.getServer().getScheduler().runTaskAsynchronously(this, tSR);
 					
@@ -103,17 +105,18 @@ public class Trade extends JavaPlugin {
 		if(tradeAccepter.isRequested) {
 			tradeAccepter.tSR.resetStatus = false;
 			
-			tradeAccepter.setCurrentStatus(true);
-			Inventory inv = Bukkit.getServer().createInventory(null, 54);
-			inv.addItem(new ItemStack(Material.ACACIA_BOAT, 2));
-			accepter.openInventory(inv);
-			tradeAccepter.partner.player.sendMessage("inv");
-			
+			tradeAccepter.setIsInInvStatus(true);
+			tradeAccepter.partner.setIsInInvStatus(true);
+
+			tradeAccepter.openInventory();
+			tradeAccepter.partner.openInventory();
 			
 		}else {
 			accepter.sendMessage("Du hast momentan keine Anfrage");
 		}
 	}
+	
+	
 	
 	public void declineTrade(Player decliner) {
 		
@@ -132,6 +135,8 @@ public class Trade extends JavaPlugin {
 		}
 	}
 	
+	
+	
 	public void resetAll(TradePlayer reseter) {
 		
 		if(reseter != null) {
@@ -142,6 +147,7 @@ public class Trade extends JavaPlugin {
 			reseter.setPartner(null);
 			reseter.setRequestStatus(false);
 			reseter.setTradeStatus(false);
+			reseter.setIsInInvStatus(false);
 		}
 		
 	}

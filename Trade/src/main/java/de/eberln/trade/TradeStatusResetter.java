@@ -10,14 +10,11 @@ public class TradeStatusResetter implements Runnable{
 	
 	public boolean resetStatus;
 	
-	public TradeStatusResetter(TradePlayer requester, TradePlayer target, Trade t) {
+	public TradeStatusResetter(TradePlayer requester, TradePlayer target) {
 		
 		this.requester = requester;
 		this.target = target;
 		resetStatus = true;
-		
-		this.t = t;
-		
 	}
 	
 	public void run() {
@@ -29,9 +26,11 @@ public class TradeStatusResetter implements Runnable{
 			e.printStackTrace();
 		}
 		
-		t.getLogger().info(resetStatus + "");
-		
 		if(resetStatus) {
+			
+			requester.player.sendMessage("Deine Anfrage an " + target.player.getDisplayName() + " ist abgelaufen");
+			target.player.sendMessage("Die an dich gerichtete Anfrage von " + requester.player.getDisplayName() + " ist abgelaufen");
+			
 			if(requester != null) {
 				requester.setTradeStatus(false);
 			}
@@ -40,9 +39,5 @@ public class TradeStatusResetter implements Runnable{
 				target.setRequestStatus(false);
 			}
 		}
-		t.getLogger().info("Thread stopped");
-		
-		
-	}
-	
+	}	
 }

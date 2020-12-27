@@ -27,13 +27,20 @@ public class InventoryClickListener implements Listener{
 			
 			ItemStack clickedItem = e.getCurrentItem();
 			
-			if(e.getClickedInventory().getType() == InventoryType.PLAYER) {
-				e.getWhoClicked().sendMessage("player");
+			if(e.getClickedInventory() != null && e.getClickedInventory().getType() == InventoryType.PLAYER) {
+				
+				clicker.addItemToTrade(clickedItem);
+				
 			}else {
-				e.getWhoClicked().sendMessage("chest");
+				if(!InventoryStorage.items.containsValue(clickedItem) && clickedItem != null) {
+					if(clicker.getIndexFromItemStack(clickedItem) != -1) {
+						
+						clicker.removeItemFromTrade(clickedItem, clicker.getIndexFromItemStack(clickedItem));
+						clicker.partner.removeItemFromPartnerTrade(clickedItem);
+						
+					}
+				}
 			}
 		}
-		
 	}
-	
 }
