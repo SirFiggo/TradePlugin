@@ -1,12 +1,9 @@
 package de.eberln.trade;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Trade extends JavaPlugin {
@@ -20,6 +17,11 @@ public class Trade extends JavaPlugin {
 		
 		getServer().getPluginManager().registerEvents(new InventoryClickListener(tPC), this);
 		getServer().getPluginManager().registerEvents(new TradePlayerJoinLeaveListener(tPC), this);
+		getServer().getPluginManager().registerEvents(new InventoryCloseListener(tPC), this);
+		
+		for(Player p : Bukkit.getServer().getOnlinePlayers()) {
+			tPC.addTradePlayer(p.getUniqueId());
+		}
 		
 	}
 	
@@ -64,37 +66,46 @@ public class Trade extends JavaPlugin {
 		Player target = Bukkit.getPlayer(targetName);
 		
 		if(target != null) {
-		
-		TradePlayer tradeTarget = tPC.getTradePlayer(target.getUniqueId());
-		TradePlayer tradeRequester = tPC.getTradePlayer(request.getUniqueId());
-		
-			if(!tradeTarget.isBlocked) {
-				if(!tradeRequester.isBlocked) {
-					
-					tradeTarget.setTradeStatus(true);
-					tradeRequester.setTradeStatus(true);
-					
-					tradeTarget.setRequestStatus(true);
-					
-					tradeRequester.setPartner(tradeTarget);
-					tradeTarget.setPartner(tradeRequester);
-					
-					request.sendMessage("Anfrage gesendet. Warte bis sie akzeptiert wird");
-					target.sendMessage("Du hast einen Anfrage erhalten. Annehmen mit /trade accept");
-					
-					
-					TradeStatusResetter tSR = new TradeStatusResetter(tradeRequester, tradeTarget);
-					tradeTarget.setTradeStatusResetter(tSR);
-					Bukkit.getServer().getScheduler().runTaskAsynchronously(this, tSR);
-					
-				}else {
-					request.sendMessage("Du befindest dich bereits in einem anderen Tausch");
-				}
+			if(target != request) {
+			
+				TradePlayer tradeTarget = tPC.getTradePlayer(target.getUniqueId());
+				TradePlayer tradeRequester = tPC.getTradePlayer(request.getUniqueId());
+				
+					if(!tradeTarget.isBlocked) {
+						if(!tradeRequester.isBlocked) {
+							
+							tradeTarget.setTradeStatus(true);
+							tradeRequester.setTradeStatus(true);
+							
+							tradeTarget.setRequestStatus(true);
+							
+							tradeRequester.setPartner(tradeTarget);
+							tradeTarget.setPartner(tradeRequester);
+							
+							request.sendMessage("§6Handel §7| §fDu hast eine Handelsanfrage an " + target.getDisplayName() + " gesendet.");
+							
+							target.sendMessage("§6Handel §7| §fDu hast eine Handelsanfrage von " + request.getDisplayName() + " erhalten! " + 
+									"Um die Anfrage anzunehmen, schreibe §6/trade accept§f." + 
+									"Um die Anfrage abzulehnen, schreibe §6/trade decline§f." + 
+									"Diese Anfrage wird nach §6120 Sekunden §fungültig.");
+							
+							
+							TradeStatusResetter tSR = new TradeStatusResetter(tradeRequester, tradeTarget);
+							tradeTarget.setTradeStatusResetter(tSR);
+							Bukkit.getServer().getScheduler().runTaskAsynchronously(this, tSR);
+							
+						}else {
+							request.sendMessage("§6Handel §7| §cDu hast bereits eine ausstehende Handelsanfrage.");
+						}
+					}else {
+						request.sendMessage("§6Handel §7| §cDer angefragte Spieler befindet sich bereits in einem Handel. Warte kurz und probiere es dann noch einmal.");
+					}
+				
 			}else {
-				request.sendMessage("Der Spieler mit dem du handeln willst befindet sich bereits in einem Tausch. Warte kurz und probiere es dann nocheinmal");
+				request.sendMessage("Du kannst nicht mit dir selber handeln");
 			}
 		}else {
-			request.sendMessage("Der Spieler " + targetName + " wurde nicht gefunden");
+			request.sendMessage("§6Handel §7| §cDer Spieler " + targetName + " wurde nicht gefunden!");
 		}
 	}
 	
@@ -107,12 +118,15 @@ public class Trade extends JavaPlugin {
 			
 			tradeAccepter.setIsInInvStatus(true);
 			tradeAccepter.partner.setIsInInvStatus(true);
+			
+			accepter.sendMessage("§6Handel §7| §fHandelsanfrage von " + tradeAccepter.partner.player.getDisplayName()  + " wurde angenommen.");
+			tradeAccepter.partner.player.sendMessage("§6Handel §7| §fDeine Handelsanfrage an " + accepter.getDisplayName()  + " wurde von ihm angenommen.");
 
 			tradeAccepter.openInventory();
 			tradeAccepter.partner.openInventory();
 			
 		}else {
-			accepter.sendMessage("Du hast momentan keine Anfrage");
+			accepter.sendMessage("§6Handel §7| §cDu hast keine ausstehende Anfrage!");
 		}
 	}
 	
@@ -125,31 +139,14 @@ public class Trade extends JavaPlugin {
 			
 			TradePlayer partner = tradeDecliner.partner;
 			
-			resetAll(partner);
-			resetAll(tradeDecliner);
-			decliner.sendMessage("Du hast die Anfrage von " + partner.player.getDisplayName() + " abgelehnt");
-			partner.player.sendMessage("Deine Anfrage an " + decliner.getDisplayName() + " wurde abgelehnt");
+			partner.resetAll();
+			tradeDecliner.resetAll();
+			decliner.sendMessage("§6Handel §7| §fDu hast die Anfrage von " + partner.player.getDisplayName() + " abgelehnt");
+			partner.player.sendMessage("§6Handel §7| §fDeine Anfrage an " + decliner.getDisplayName() + " wurde abgelehnt");
 			
 		}else {
-			decliner.sendMessage("Du hast keine laufende Anfrage");
+			decliner.sendMessage("§6Handel §7| §cDu hast keine ausstehende Anfrage!");
 		}
-	}
-	
-	
-	
-	public void resetAll(TradePlayer reseter) {
-		
-		if(reseter != null) {
-			if(reseter.tSR != null) {
-				reseter.tSR.resetStatus = false;
-			}
-			
-			reseter.setPartner(null);
-			reseter.setRequestStatus(false);
-			reseter.setTradeStatus(false);
-			reseter.setIsInInvStatus(false);
-		}
-		
 	}
 	
 }

@@ -1,5 +1,6 @@
 package de.eberln.trade;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -14,8 +15,11 @@ public class TradePlayer{
 	public boolean isBlocked;
 	public boolean isRequested;
 	public boolean isCurrentlyinInv;
+	public boolean hasConfirmed;
 	
 	public Inventory inv;
+	
+	public ArrayList<ItemStack> offer = new ArrayList<ItemStack>();
 	
 	public TradeStatusResetter tSR;
 	
@@ -29,6 +33,7 @@ public class TradePlayer{
 		isBlocked = false;
 		isRequested = false;
 		isCurrentlyinInv = false;
+		hasConfirmed = false;
 		tSR = null;
 		partner = null;
 		inv = Bukkit.getServer().createInventory(player, 54);
@@ -54,6 +59,41 @@ public class TradePlayer{
 		isCurrentlyinInv = isInInv;
 	}
 	
+	public void setConfirmedStatus(boolean confirmed) {
+		hasConfirmed = confirmed;
+		if(confirmed) {
+			inv.setItem(2, InventoryStorage.items.get("confirmed"));
+		}else {
+			inv.setItem(2, InventoryStorage.items.get("confirm"));
+		}
+		
+		if(hasConfirmed && partner.hasConfirmed) {
+			
+			for(int i=0;i<partner.offer.size();i++) {
+				player.getInventory().addItem(partner.offer.get(i));
+			}
+			for(int i=0;i<offer.size();i++) {
+				partner.player.getInventory().addItem(offer.get(i));
+			}
+			
+			player.sendMessage("§6Handel §7| §fHandel wurde erfolgreich abgeschlossen!");
+			partner.player.sendMessage("§6Handel §7| §fHandel wurde erfolgreich abgeschlossen!");
+			
+			partner.resetAll();
+			resetAll();
+			
+		}
+	}
+	
+	public void setPartnerConfirmedStatus(boolean confirmed) {
+		if(confirmed) {
+			inv.setItem(6, InventoryStorage.items.get("green"));
+		}else {
+			inv.setItem(6, InventoryStorage.items.get("orange"));
+		}
+		
+	}
+	
 	public void openInventory() {
 		
 		inv.setItem(4, InventoryStorage.items.get("border"));
@@ -65,17 +105,29 @@ public class TradePlayer{
 		
 		inv.setItem(0, InventoryStorage.items.get("cancel"));
 		
+		inv.setItem(2, InventoryStorage.items.get("confirm"));
+		
+		inv.setItem(6, InventoryStorage.items.get("orange"));
+		
 		player.openInventory(inv);
 
 	}
 	
-	public boolean addItemToTrade(ItemStack istack) {
+	public boolean addItemToTrade(ItemStack istack, int index) {
 		
 		for(int i=0;i<6;i++) {
 			if(inv.getItem(ownIndizes[i]) == null) {
 				inv.setItem(ownIndizes[i], istack);
+				
 				partner.addItemToPartnerTrade(istack);
-				player.getInventory().remove(istack);
+				
+				if(index >= 54 && index <= 80) {
+					player.getInventory().clear(index-45);
+				}else if(index >= 81 && index <= 89){
+					player.getInventory().clear(index-81);
+				}
+				
+				offer.add(istack);
 				player.updateInventory();
 				return true;
 			}
@@ -99,30 +151,65 @@ public class TradePlayer{
 	}
 	
 	
-	public void removeItemFromTrade(ItemStack istack, int i) {
+	public void removeItemFromTrade(ItemStack istack, int index) {
 		
-		inv.clear(i);
+		inv.clear(index);
 		player.getInventory().addItem(istack);
+		offer.remove(istack);
 		player.updateInventory();
-		
-		partner.removeItemFromPartnerTrade(istack);
 		
 	}
 	
 	public void removeItemFromPartnerTrade(ItemStack istack) {
 		
-		inv.remove(istack);
+		inv.clear(getIndexFromItemStack(istack));
 		player.updateInventory();
 		
 	}
 	
 	public int getIndexFromItemStack(ItemStack istack) {
 		for(int i=0;i<6;i++) {
-			int[] indizes = {19,20,28,29,37,38};
-			if(inv.getItem(indizes[i]) != null && inv.getItem(indizes[i]).equals(istack)) {
-				return indizes[i];
+			if(inv.getItem(partnerIndizes[i]) != null && inv.getItem(partnerIndizes[i]).equals(istack)) {
+				return partnerIndizes[i];
 			}
 		}
 		return -1;
 	}
+	
+	public boolean isInOwnIndizes(int index) {
+		for(int i=0;i<ownIndizes.length;i++) {
+			if(index == ownIndizes[i]) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean isInPartnerIndizes(int index) {
+		for(int i=0;i<partnerIndizes.length;i++) {
+			if(index == partnerIndizes[i]) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public void resetAll() {
+		
+		if(tSR != null) {
+			tSR.resetStatus = false;
+		}
+		
+		setPartner(null);
+		setRequestStatus(false);
+		setTradeStatus(false);
+		setIsInInvStatus(false);
+		setConfirmedStatus(false);
+		setPartnerConfirmedStatus(false);
+		offer.clear();
+		player.closeInventory();
+		inv.clear();
+		
+		}
+	
 }

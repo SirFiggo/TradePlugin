@@ -1,12 +1,9 @@
 package de.eberln.trade;
 
-import java.util.UUID;
-
 public class TradeStatusResetter implements Runnable{
 
 	private TradePlayer target;
 	private TradePlayer requester;
-	private Trade t;
 	
 	public boolean resetStatus;
 	

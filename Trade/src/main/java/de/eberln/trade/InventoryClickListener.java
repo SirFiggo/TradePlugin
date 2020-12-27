@@ -5,7 +5,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 
 public class InventoryClickListener implements Listener{
 
@@ -22,23 +21,55 @@ public class InventoryClickListener implements Listener{
 		
 		TradePlayer clicker = tPC.getTradePlayer(e.getWhoClicked().getUniqueId());
 		
-		if(clicker.isCurrentlyinInv) {
+		if(clicker != null && clicker.isCurrentlyinInv) {
 			e.setCancelled(true);
 			
 			ItemStack clickedItem = e.getCurrentItem();
 			
 			if(e.getClickedInventory() != null && e.getClickedInventory().getType() == InventoryType.PLAYER) {
 				
-				clicker.addItemToTrade(clickedItem);
+				clicker.addItemToTrade(clickedItem, e.getRawSlot());
+				
+				clicker.setConfirmedStatus(false);
+				clicker.partner.setConfirmedStatus(false);
+				clicker.setPartnerConfirmedStatus(false);
+				clicker.partner.setPartnerConfirmedStatus(false);
 				
 			}else {
 				if(!InventoryStorage.items.containsValue(clickedItem) && clickedItem != null) {
-					if(clicker.getIndexFromItemStack(clickedItem) != -1) {
+					if(clicker.isInOwnIndizes(e.getRawSlot())) {
 						
-						clicker.removeItemFromTrade(clickedItem, clicker.getIndexFromItemStack(clickedItem));
+						clicker.setConfirmedStatus(false);
+						clicker.partner.setConfirmedStatus(false);
+						clicker.setPartnerConfirmedStatus(false);
+						clicker.partner.setPartnerConfirmedStatus(false);
+						
+						clicker.removeItemFromTrade(clickedItem, e.getRawSlot());
 						clicker.partner.removeItemFromPartnerTrade(clickedItem);
 						
 					}
+				}else if(clickedItem != null && clickedItem.equals(InventoryStorage.items.get("confirm"))) {
+					
+					clicker.setConfirmedStatus(true);
+					if(clicker.partner != null) clicker.partner.setPartnerConfirmedStatus(true);
+					
+				}else if(clickedItem != null && clickedItem.equals(InventoryStorage.items.get("cancel"))) {
+					
+					clicker.player.closeInventory();
+					clicker.partner.player.closeInventory();
+					
+					for(int i=0;i<clicker.offer.size();i++) {
+						clicker.player.getInventory().addItem(clicker.offer.get(i));
+					}
+					for(int i=0; i<clicker.partner.offer.size(); i++) {
+						clicker.partner.player.getInventory().addItem(clicker.partner.offer.get(i));
+					}
+					
+					clicker.player.sendMessage("Du hast den Handel abgebrochen");
+					clicker.partner.player.sendMessage("Dein Hanelspartner hat den Handel abgebrochen");
+					
+					clicker.partner.resetAll();
+					clicker.resetAll();
 				}
 			}
 		}

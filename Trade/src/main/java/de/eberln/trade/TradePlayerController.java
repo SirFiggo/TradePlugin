@@ -8,8 +8,6 @@ public class TradePlayerController {
 
 	private Map<UUID, TradePlayer> tradePlayers;
 	
-	private int currentIndex;
-	
 	public TradePlayerController() {
 		
 		tradePlayers = new HashMap<UUID, TradePlayer>();
