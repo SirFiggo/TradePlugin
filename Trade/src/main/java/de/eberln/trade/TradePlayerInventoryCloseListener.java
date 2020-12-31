@@ -4,11 +4,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 
-public class InventoryCloseListener implements Listener{
+public class TradePlayerInventoryCloseListener implements Listener{
 
 	private TradePlayerController tPC;
 	
-	public InventoryCloseListener(TradePlayerController tPC) {
+	public TradePlayerInventoryCloseListener(TradePlayerController tPC) {
 		this.tPC = tPC; 
 	}
 	

@@ -1,13 +1,13 @@
 package de.eberln.trade;
 
-public class TradeStatusResetter implements Runnable{
+public class RunnableTradeStatusResetter implements Runnable{
 
 	private TradePlayer target;
 	private TradePlayer requester;
 	
 	public boolean resetStatus;
 	
-	public TradeStatusResetter(TradePlayer requester, TradePlayer target) {
+	public RunnableTradeStatusResetter(TradePlayer requester, TradePlayer target) {
 		
 		this.requester = requester;
 		this.target = target;

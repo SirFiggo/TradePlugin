@@ -15,9 +15,9 @@ public class Trade extends JavaPlugin {
 		tPC = new TradePlayerController();
 		InventoryStorage.initializeItems();
 		
-		getServer().getPluginManager().registerEvents(new InventoryClickListener(tPC), this);
+		getServer().getPluginManager().registerEvents(new TradePlayerInventoryClickListener(tPC), this);
 		getServer().getPluginManager().registerEvents(new TradePlayerJoinLeaveListener(tPC), this);
-		getServer().getPluginManager().registerEvents(new InventoryCloseListener(tPC), this);
+		getServer().getPluginManager().registerEvents(new TradePlayerInventoryCloseListener(tPC), this);
 		getServer().getPluginManager().registerEvents(new TradePlayerDeathListener(tPC), this);
 		
 		for(Player p : Bukkit.getServer().getOnlinePlayers()) {
@@ -91,7 +91,7 @@ public class Trade extends JavaPlugin {
 									"Diese Anfrage wird nach §6120 Sekunden §fungültig.");
 							
 							
-							TradeStatusResetter tSR = new TradeStatusResetter(tradeRequester, tradeTarget);
+							RunnableTradeStatusResetter tSR = new RunnableTradeStatusResetter(tradeRequester, tradeTarget);
 							tradeTarget.setTradeStatusResetter(tSR);
 							Bukkit.getServer().getScheduler().runTaskAsynchronously(this, tSR);
 							

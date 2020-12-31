@@ -21,7 +21,7 @@ public class TradePlayer{
 	
 	public ArrayList<ItemStack> offer = new ArrayList<ItemStack>();
 	
-	public TradeStatusResetter tSR;
+	public RunnableTradeStatusResetter tSR;
 	
 	public TradePlayer partner;
 	
@@ -47,7 +47,7 @@ public class TradePlayer{
 		isRequested = receivedRequest;
 	}
 	
-	public void setTradeStatusResetter(TradeStatusResetter t) {
+	public void setTradeStatusResetter(RunnableTradeStatusResetter t) {
 		tSR = t;
 	}
 	

@@ -6,11 +6,11 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
 
-public class InventoryClickListener implements Listener{
+public class TradePlayerInventoryClickListener implements Listener{
 
 	private TradePlayerController tPC;
 	
-	public InventoryClickListener(TradePlayerController tPC) {
+	public TradePlayerInventoryClickListener(TradePlayerController tPC) {
 		
 		this.tPC = tPC;
 		
