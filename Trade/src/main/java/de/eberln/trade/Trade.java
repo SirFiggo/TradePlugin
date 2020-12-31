@@ -18,6 +18,7 @@ public class Trade extends JavaPlugin {
 		getServer().getPluginManager().registerEvents(new InventoryClickListener(tPC), this);
 		getServer().getPluginManager().registerEvents(new TradePlayerJoinLeaveListener(tPC), this);
 		getServer().getPluginManager().registerEvents(new InventoryCloseListener(tPC), this);
+		getServer().getPluginManager().registerEvents(new TradePlayerDeathListener(tPC), this);
 		
 		for(Player p : Bukkit.getServer().getOnlinePlayers()) {
 			tPC.addTradePlayer(p.getUniqueId());
@@ -63,7 +64,7 @@ public class Trade extends JavaPlugin {
 	}
 
 	private void sendTradeRequest(Player request, String targetName) {
-		Player target = Bukkit.getPlayer(targetName);
+		Player target = findPlayer(targetName);
 		
 		if(target != null) {
 			if(target != request) {
@@ -147,6 +148,15 @@ public class Trade extends JavaPlugin {
 		}else {
 			decliner.sendMessage("§6Handel §7| §cDu hast keine ausstehende Anfrage!");
 		}
+	}
+	
+	private Player findPlayer(String displayName) {
+		for(Player p : Bukkit.getServer().getOnlinePlayers()) {
+			if(p.getDisplayName().equals(displayName)) {
+				return p;
+			}
+		}
+		return null;
 	}
 	
 }
