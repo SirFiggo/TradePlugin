@@ -20,7 +20,6 @@ public class TradePlayerInventoryCloseListener implements Listener{
 		if(closer != null) {
 			if(closer.isCurrentlyinInv) {
 				
-				
 				for(int i=0;i<closer.offer.size();i++) {
 					closer.player.getInventory().addItem(closer.offer.get(i));
 				}
